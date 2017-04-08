@@ -1,0 +1,3 @@
+[submodule "libqpu/QPULib"]
+	path = libqpu/QPULib
+	url = https://github.com/seanshpark/QPULib.git
