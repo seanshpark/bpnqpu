@@ -17,7 +17,7 @@
 #include "QPULib.h"
 
 // Define function that runs on the GPU.
-void hello(Ptr<Float> w, Ptr<Float> i, Ptr<Float> o)
+void f_mulsum(Ptr<Float> w, Ptr<Float> i, Ptr<Float> o)
 {
   o = o + (me() << 4);
   i = i + (me() << 4);
@@ -26,31 +26,69 @@ void hello(Ptr<Float> w, Ptr<Float> i, Ptr<Float> o)
   *o = *w * *i;
 }
 
+typedef Kernel<Ptr<Float>, Ptr<Float>, Ptr<Float> > mulsum_code;
+
+class TestClass
+{
+public:
+  TestClass(int n);
+  void Construct();
+  void Call_mulsum();
+
+public:
+  int N;
+
+  SharedArray<float> * iarray;
+  SharedArray<float> * oarray;
+  SharedArray<float> * warray;
+
+  mulsum_code func_mulsum_;
+};
+
+TestClass::TestClass(int n)
+  : N(n)
+  , func_mulsum_(compile(f_mulsum))
+{
+  func_mulsum_.setNumQPUs(16);
+}
+
+void TestClass::Construct()
+{
+  printf("N = %d\n", N);
+  iarray = new SharedArray<float>(N);
+  oarray = new SharedArray<float>(N);
+  warray = new SharedArray<float>(N);
+}
+
+void TestClass::Call_mulsum()
+{
+  func_mulsum_(warray, iarray, oarray);
+}
+
 int main()
 {
   // Construct kernel
-  auto k = compile(hello);
-  int N;
+  TestClass* testobj = new TestClass(64);
+  testobj->Construct();
 
-  N = 32;
+  float* fc1 = &(*(testobj->iarray))[0];
+  float* fc2 = &(*(testobj->warray))[0];
 
   // Allocate and initialise array shared between ARM and GPU
-  SharedArray<float> iarray(N);
-  SharedArray<float> oarray(N);
-  SharedArray<float> warray(N);
-  for (int i = 0; i < N; i++)
+  for (int i = 0; i < testobj->N; i++)
   {
-    iarray[i] = 0.2f;
-    warray[i] = 0.12f;
+    fc1[i] = 0.1f * (float)i;
+    fc2[i] = 0.12f;
   }
 
-  k.setNumQPUs(16);
-
   // Invoke the kernel and display the result
-  k(&warray, &iarray, &oarray);
-  for (int i = 0; i < N; i++)
+  testobj->Call_mulsum();
+
+  for (int i = 0; i < testobj->N; i++)
   {
-    printf("%03d: %f %f %f\n", i, iarray[i], warray[i], oarray[i]);
+    printf("%03d: %f %f %f\n", i, (*(testobj->iarray))[i],
+                                  (*(testobj->warray))[i],
+                                  (*(testobj->oarray))[i]);
   }
 
   return 0;

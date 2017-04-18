@@ -13,22 +13,22 @@
 # limitations under the License.
 
 # project name
-set(HELLOWORLD "helloworld")
+set(TARGETPRJ "bpnqpu")
 
 # source file(s)
-set(HELLOWORLD_SOURCEFILES
-        helloworld.cpp)
+set(TARGETPRJ_SOURCEFILES
+         helloworld.cpp)
 
 # addition library
 link_directories(${PROJ_LIBPATHS})
 
-# build executable: helloworld
-add_executable(${HELLOWORLD} ${HELLOWORLD_SOURCEFILES})
-target_include_directories(${HELLOWORLD} SYSTEM PRIVATE ${TARGET_INC})
-target_include_directories(${HELLOWORLD} PUBLIC ${PROJ_INCLUDES}
+# build executable:
+add_executable(${TARGETPRJ} ${TARGETPRJ_SOURCEFILES})
+target_include_directories(${TARGETPRJ} SYSTEM PRIVATE ${TARGET_INC})
+target_include_directories(${TARGETPRJ} PUBLIC ${PROJ_INCLUDES}
                            ${CMAKE_SOURCE_DIR}/libqpu/QPULib/Lib)
-target_link_libraries(${HELLOWORLD} LINK_PUBLIC ${PROJ_LIBS} "qpu")
-set_target_properties(${HELLOWORLD} PROPERTIES
+target_link_libraries(${TARGETPRJ} LINK_PUBLIC ${PROJ_LIBS} "qpu")
+set_target_properties(${TARGETPRJ} PROPERTIES
                         ARCHIVE_OUTPUT_DIRECTORY "${PROJ_LIB_OUT}"
                         LIBRARY_OUTPUT_DIRECTORY "${PROJ_LIB_OUT}"
                         RUNTIME_OUTPUT_DIRECTORY "${PROJ_BIN_OUT}")
